@@ -46,7 +46,7 @@ def download_and_reload_model():
         print("Model successfully updated in production!")
 
     except Exception as e:
-        print(f"Error updating the model: {e}"
+        print(f"Error updating the model: {e}")
 
 @app.post("/api/admin/reload-model")
 async def reload_model(background_tasks: BackgroundTasks, x_api_key: str = Header(None)):
