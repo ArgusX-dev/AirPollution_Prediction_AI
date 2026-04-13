@@ -39,7 +39,6 @@ def download_and_reload_model():
         s3.download_file(bucket_name, 'final_model/model.pkl', 'final_model/model.pkl')
         s3.download_file(bucket_name, 'final_model/preprocessor.pkl', 'final_model/preprocessor.pkl')
 
-        # 2. Asignamos directo a las variables globales (adiós app.state)
         preprocessor = load_object('final_model/preprocessor.pkl')
         model = load_object('final_model/model.pkl')
 
