@@ -138,26 +138,42 @@ async def start_training_process(x_api_key: str = Header(None)):
 async def home(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
+
 @app.get("/api/dashboard")
 async def get_dashboard_data():
-    real_data = get_real_time_data()
-    predictions = []
 
-    last_known_risk = real_data['current_risk_severity']
+    if preprocessor is None or model is None:
+        raise HTTPException(
+            status_code=503,
+            detail="The AI models are not yet loaded. Run the pipeline in Airflow or wait for synchronization with S3."
+        )
+    try:
+        real_data = get_real_time_data()
+        print(f"Weather: {real_data}")
+
+        if not real_data:
+            raise ValueError("OpenWeather returned empty data.")
+
+    except Exception as e:
+        print(f"Fatal error retrieving weather data: {e}")
+        raise HTTPException(status_code=502, detail=f"Failure to connect to the satellite/weather: {e}")
+
+    predictions = []
+    last_known_risk = real_data.get('current_risk_severity', 1)
 
     for h in range(3):
         input_dict = {
-            'temperature_c': real_data['temp'],
-            'humidity_pct': real_data['hum'],
-            'pressure_hpa': real_data['press'],
-            'wind_speed_ms': real_data['w_speed'],
-            'wind_direction_deg': real_data['w_dir'],
-            'cloudiness_pct': real_data['clouds'],
-            'co': real_data['co'],
-            'no2': real_data['no2'],
-            'o3': real_data['o3'],
-            'pm2_5': real_data['pm2_5'],
-            'pm10': real_data['pm10'],
+            'temperature_c': real_data.get('temp', 0),
+            'humidity_pct': real_data.get('hum', 0),
+            'pressure_hpa': real_data.get('press', 0),
+            'wind_speed_ms': real_data.get('w_speed', 0),
+            'wind_direction_deg': real_data.get('w_dir', 0),
+            'cloudiness_pct': real_data.get('clouds', 0),
+            'co': real_data.get('co', 0),
+            'no2': real_data.get('no2', 0),
+            'o3': real_data.get('o3', 0),
+            'pm2_5': real_data.get('pm2_5', 0),
+            'pm10': real_data.get('pm10', 0),
             'hour': (pd.Timestamp.now().hour + h) % 24,
             'day_of_week': pd.Timestamp.now().dayofweek,
             'month': pd.Timestamp.now().month,
@@ -167,7 +183,6 @@ async def get_dashboard_data():
         }
 
         df = pd.DataFrame([input_dict])
-
         X_transform = preprocessor.transform(df)
 
         raw_pred = model.predict(X_transform)[0]
