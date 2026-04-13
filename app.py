@@ -17,8 +17,14 @@ load_dotenv()
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-preprocessor = load_object('final_model/preprocessor.pkl')
-model = load_object('final_model/model.pkl')
+try:
+    model = load_object('final_model/model.pkl')
+    preprocessor = load_object('final_model/preprocessor.pkl')
+    print("Modelos locales cargados con éxito.")
+except Exception as e:
+    print(f"⚠️ Advertencia: Modelos no encontrados. El servidor iniciará sin ellos a la espera de Airflow. Detalle: {e}")
+    model = None
+    preprocessor = None
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "argus_secret")
 
 def download_and_reload_model():
