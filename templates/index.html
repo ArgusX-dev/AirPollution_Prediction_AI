@@ -67,6 +67,10 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
                 Dashboard
             </button>
+            <button onclick="switchTab('live', this)" class="nav-btn w-full text-left px-4 py-3 rounded-lg font-medium text-textmuted hover:bg-lightbg hover:text-textmain transition-colors flex items-center gap-3">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                Live Data
+            </button>
             <button onclick="switchTab('informacion', this)" class="nav-btn w-full text-left px-4 py-3 rounded-lg font-medium text-textmuted hover:bg-lightbg hover:text-textmain transition-colors flex items-center gap-3">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                 Información
@@ -79,8 +83,8 @@
         </a>
     </aside>
 
-    <main class="flex-1 overflow-y-auto p-8 lg:p-12">
-        <div class="max-w-5xl mx-auto">
+    <main class="flex-1 overflow-y-auto p-8 lg:p-12 flex flex-col">
+        <div class="max-w-5xl mx-auto w-full flex-1">
 
             <section id="dashboard" class="content-section active">
                 <div class="flex justify-between items-end mb-8">
@@ -128,9 +132,7 @@
 
                 <div class="mb-6">
                     <h3 class="text-lg font-bold text-cyan-950 mb-3">Recomendaciones Activas</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="advice-container">
-
-                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="advice-container"></div>
                 </div>
 
                 <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 p-6 w-full h-80 flex flex-col">
@@ -142,39 +144,93 @@
                 </div>
             </section>
 
+            <section id="live" class="content-section">
+                <div class="flex justify-between items-end mb-8">
+                    <h2 class="text-3xl font-bold text-cyan-950">Live Data Center</h2>
+                    <span class="text-sm font-semibold bg-white border border-cyan-200 px-4 py-1.5 rounded-full shadow-sm text-cyan-800 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                        OpenWeather API
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="live-data-container">
+                    <div class="col-span-full text-center py-10 text-cyan-700">Obteniendo datos en tiempo real...</div>
+                </div>
+            </section>
+
             <section id="informacion" class="content-section">
-                <h2 class="text-3xl font-bold text-cyan-950 mb-8">Información del Sistema</h2>
+                <h2 class="text-3xl font-bold text-cyan-950 mb-8">Información del Proyecto</h2>
 
-                <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 p-8 space-y-8">
-                    <div>
-                        <h3 class="text-lg font-bold text-cyan-900 mb-2">Sobre nuestros datos</h3>
-                        <p class="text-cyan-800 leading-relaxed">
-                            El modelo predictivo de ArgusX se alimenta de lecturas históricas y en tiempo real, integrando datos obtenidos a través de OpenWeather que abarcan desde 2021 hasta la fecha actual. Este motor analiza múltiples variables meteorológicas y contaminantes para inferir la calidad del aire con alta precisión.
-                            <strong class="text-cyan-950">
-                            El modelo es reentrenado y actualizado automáticamente según los pipelines de MLOps configurados, realizándose este proceso de forma mensual para incorporar los cambios más recientes y mantener la mayor exactitud posible en las predicciones.
-                            </strong>
+                <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 p-8 mb-8">
+                    <div class="text-center max-w-3xl mx-auto">
+                        <div class="w-16 h-16 bg-cyan-50 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-cyan-900 mb-4">Nuestra Misión</h3>
+                        <p class="text-cyan-800 leading-relaxed text-lg">
+                            Air Quality es una plataforma que proporciona información en tiempo real sobre la calidad del aire en la zona de Guadalajara. Además, ofrece pronósticos para las próximas horas mediante el uso de inteligencia artificial y modelos de machine learning. Su objetivo es ayudar a las personas a tomar decisiones informadas sobre su salud y entorno, promoviendo una mayor conciencia sobre la calidad ambiental.
                         </p>
                     </div>
+                </div>
 
-                    <div>
-                        <h3 class="text-lg font-bold text-cyan-900 mb-2">La Norma Ambiental Oficial</h3>
-                        <p class="text-cyan-800 leading-relaxed">
-                            Nuestro sistema clasifica la calidad del aire basándose en los estándares oficiales ambientales. Es importante conocer las normativas que regulan los niveles de PM10, PM2.5 y Ozono para proteger la salud pública.
-                            La NOM-2023 establece los criterios para la evaluación y comunicación del Índice de Calidad del Aire y Riesgos a la Salud, definiendo rangos y umbrales de contaminantes para informar de manera clara el nivel de exposición y sus posibles efectos en la salud.
-                        </p>
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-cyan-950 mb-6 text-center">Nuestra Tecnología</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        <div class="bg-card border border-cyan-100 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                            </div>
+                            <h4 class="font-bold text-cyan-950 mb-2">Machine Learning</h4>
+                            <p class="text-sm text-cyan-700">Modelo XGBoost optimizado para predicciones de alta precisión y análisis temporal.</p>
+                        </div>
+
+                        <div class="bg-card border border-cyan-100 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                            </div>
+                            <h4 class="font-bold text-cyan-950 mb-2">ETL Pipeline</h4>
+                            <p class="text-sm text-cyan-700">Apache Airflow (Astronomer) para orquestación de datos y reentrenamiento automatizado.</p>
+                        </div>
+
+                        <div class="bg-card border border-cyan-100 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                            </div>
+                            <h4 class="font-bold text-cyan-950 mb-2">IA Generativa (RAG)</h4>
+                            <p class="text-sm text-cyan-700">Integración de LangChain y LLMs para crear nuestro agente autónomo consultor.</p>
+                        </div>
+
+                        <div class="bg-card border border-cyan-100 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition-shadow">
+                            <div class="w-12 h-12 bg-cyan-50 text-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                            </div>
+                            <h4 class="font-bold text-cyan-950 mb-2">Integración de APIs</h4>
+                            <p class="text-sm text-cyan-700">Conexión ininterrumpida con OpenWeather para datos meteorológicos y de contaminación.</p>
+                        </div>
+
+                        <div class="bg-card border border-cyan-100 rounded-2xl p-6 text-center shadow-sm hover:shadow-md transition-shadow md:col-span-2">
+                            <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                            </div>
+                            <h4 class="font-bold text-cyan-950 mb-2">Infraestructura & Escalabilidad</h4>
+                            <p class="text-sm text-cyan-700">Despliegue distribuido en Hugging Face y AWS RDS, diseñado para procesar y servir miles de consultas diariamente de forma eficiente y altamente escalable.</p>
+                        </div>
                     </div>
+                </div>
 
-                    <hr class="border-cyan-100">
-
-                    <div>
-                        <h3 class="text-lg font-bold text-cyan-900 mb-4">Consultas Gubernamentales</h3>
-                        <p class="text-cyan-800 leading-relaxed mb-4">Para consultar la red oficial de monitoreo de calidad del aire del Estado de Jalisco u otras zonas específicas de Guadalajara, te invitamos a visitar el portal oficial:</p>
-                        <a href="https://aire.jalisco.gob.mx/" target="_blank" class="inline-block bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-cyan-600 transition-colors">Visitar sitio de SEMADET</a>
-                    </div>
+                <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 p-8">
+                    <h3 class="text-lg font-bold text-cyan-900 mb-4">Consultas Gubernamentales</h3>
+                    <p class="text-cyan-800 leading-relaxed mb-4">La NOM-2023 establece los criterios oficiales en México. Para consultar la red oficial de monitoreo de calidad del aire del Estado de Jalisco, te invitamos a visitar el portal de la Secretaría de Medio Ambiente y Desarrollo Territorial:</p>
+                    <a href="https://aire.jalisco.gob.mx/" target="_blank" class="inline-block bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-cyan-600 transition-colors">Visitar sitio de SEMADET</a>
                 </div>
             </section>
 
         </div>
+
+        <footer class="mt-12 text-center text-sm text-cyan-700 font-medium">
+            © 2026 Air Quality ArgusX All rights reserved
+        </footer>
     </main>
 
     <div id="argus-chatbot-widget">
@@ -297,6 +353,29 @@
                     const sunAdviceHtml = `<div class="bg-cyan-50 border border-cyan-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">☀️</span><div><h4 class="font-bold text-cyan-800 text-sm mb-1">Protección UV</h4><p class="text-xs text-cyan-700 leading-relaxed">Si sales de día, utiliza protector solar FPS 50+. Evita la exposición prolongada al sol.</p></div></div>`;
 
                     adviceContainer.innerHTML = airAdviceHtml + sunAdviceHtml;
+                }
+
+                const liveContainer = document.getElementById('live-data-container');
+                if (liveContainer && data.current) {
+                    const metrics = [
+                        { label: 'PM2.5', value: data.current.pm2_5 ?? '--', unit: 'μg/m³' },
+                        { label: 'PM10', value: data.current.pm10 ?? '--', unit: 'μg/m³' },
+                        { label: 'CO', value: data.current.co ?? '--', unit: 'μg/m³' },
+                        { label: 'NO2', value: data.current.no2 ?? '--', unit: 'μg/m³' },
+                        { label: 'O3', value: data.current.o3 ?? '--', unit: 'μg/m³' },
+                        { label: 'Humedad', value: data.current.hum ?? '--', unit: '%' },
+                        { label: 'Presión', value: data.current.press ?? '--', unit: 'hPa' },
+                        { label: 'Nubosidad', value: data.current.clouds ?? '--', unit: '%' },
+                        { label: 'Velocidad de viento', value: data.current.w_speed ?? '--', unit: 'm/s' },
+                        { label: 'Temperatura', value: data.current.temp ?? '--', unit: '°C' }
+                    ];
+
+                    liveContainer.innerHTML = metrics.map(m => `
+                        <div class="bg-card rounded-xl border border-cyan-100 p-4 shadow-sm text-center flex flex-col justify-center h-24 hover:shadow-md transition-shadow">
+                            <p class="text-[10px] text-textmuted uppercase font-bold mb-1">${m.label}</p>
+                            <p class="text-xl font-black text-cyan-900">${m.value} <span class="text-xs font-medium text-cyan-600">${m.unit}</span></p>
+                        </div>
+                    `).join('');
                 }
 
                 if (typeof forecastChart !== 'undefined') {

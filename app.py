@@ -232,14 +232,11 @@ async def chat_endpoint(request: ChatRequest):
     try:
         user_query = request.query.lower().strip()
 
-        # EL FILTRO DE CORTESÍA (Bypass de LangChain)
-        # Si el mensaje es corto y parece un saludo, respondemos directamente sin tocar AWS.
         saludos = ["hola", "buenos", "buenas", "que tal", "qué tal", "como estas", "cómo estás", "que onda"]
         if any(user_query.startswith(s) for s in saludos) and len(user_query) < 25:
             return {
                 "response": "¡Hola! Soy Argus, tu asistente de IA en calidad del aire. ¿De qué ubicación o fecha necesitas datos hoy?"}
 
-        # Si no es un saludo, LangChain entra en acción
         response = argus_bot.invoke(
             {"input": request.query},
             config={"configurable": {"session_id": request.session_id}}
