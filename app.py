@@ -7,9 +7,15 @@ from fastapi.templating import Jinja2Templates
 import uvicorn
 from dotenv import load_dotenv
 import boto3
+from fastapi.responses import HTMLResponse
 from air_quality.utils.main_utils.utils import load_object
 import asyncio
 from fastapi import BackgroundTasks
+from chat_agent.database_manager import DatabaseManager
+from chat_agent.chat_agent import SQLAgentBuilder
+from pydantic import BaseModel
+import re
+
 
 
 load_dotenv()
@@ -199,6 +205,49 @@ async def get_dashboard_data():
         "current": real_data,
         "forecast": predictions
     }
+
+
+try:
+    db_manager = DatabaseManager()
+    database = db_manager.connect()
+
+    agent_builder = SQLAgentBuilder(db=database)
+    argus_bot = agent_builder.build_agent()
+    print("ArgusX SQL Engine initialized and connected to AWS.")
+except Exception as e:
+    print(f"Error initializing the agent: {e}")
+    argus_bot = None
+
+
+class ChatRequest(BaseModel):
+    query: str
+    session_id: str = "demo_user_01"
+
+
+@app.post("/api/chat")
+async def chat_endpoint(request: ChatRequest):
+    if not argus_bot:
+        raise HTTPException(status_code=500, detail="AI Agent is currently unavailable.")
+
+    try:
+        user_query = request.query.lower().strip()
+
+        # EL FILTRO DE CORTESÍA (Bypass de LangChain)
+        # Si el mensaje es corto y parece un saludo, respondemos directamente sin tocar AWS.
+        saludos = ["hola", "buenos", "buenas", "que tal", "qué tal", "como estas", "cómo estás", "que onda"]
+        if any(user_query.startswith(s) for s in saludos) and len(user_query) < 25:
+            return {
+                "response": "¡Hola! Soy Argus, tu asistente de IA en calidad del aire. ¿De qué ubicación o fecha necesitas datos hoy?"}
+
+        # Si no es un saludo, LangChain entra en acción
+        response = argus_bot.invoke(
+            {"input": request.query},
+            config={"configurable": {"session_id": request.session_id}}
+        )
+        return {"response": response["output"]}
+    except Exception as e:
+        return {"error": str(e)}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5000)

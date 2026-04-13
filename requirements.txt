@@ -26,4 +26,11 @@ python-multipart
 sqlalchemy
 psycopg2-binary
 xgboost
+groq
+langchain
+langchain-community
+langchain-groq
+langchain-core
+psycopg2-binary
+duckduckgo-search
 #-e .

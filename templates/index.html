@@ -3,87 +3,211 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Air Quality | GDL</title>
+    <title>Air Quality | ArgusX</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
-                extend: { colors: { brand: '#0f172a', lightbg: '#f8fafc', card: '#ffffff', textmain: '#334155', textmuted: '#64748b' } }
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: '#0891b2',
+                        lightbg: '#f0fdfa',
+                        card: '#ffffff',
+                        textmain: '#164e63',
+                        textmuted: '#0e7490',
+                        primary: '#06b6d4'
+                    }
+                }
             }
         }
     </script>
+
+    <style>
+        .content-section { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .content-section.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #argus-chatbot-widget { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
+        #argus-chat-toggle { background-color: white; color: #06b6d4; border: 1px solid #cffafe; border-radius: 50px; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.2); transition: transform 0.2s; }
+        #argus-chat-toggle:hover { transform: scale(1.05); }
+        #argus-chat-window { display: none; width: 350px; height: 500px; background: white; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(6, 182, 212, 0.15); border: 1px solid #cffafe; flex-direction: column; margin-bottom: 15px; overflow: hidden; }
+        .argus-header { background: #ecfeff; color: #164e63; padding: 15px; font-weight: 700; border-bottom: 1px solid #cffafe; display: flex; justify-content: space-between; align-items: center; }
+        .argus-close-btn { background: transparent; border: none; color: #0e7490; font-weight: bold; cursor: pointer; }
+        .argus-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: white; }
+        .argus-message { padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; max-width: 85%; line-height: 1.4; }
+        .argus-bot { background: #f0fdfa; color: #164e63; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .argus-user { background: #06b6d4; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .argus-input-area { display: flex; padding: 15px; background: white; border-top: 1px solid #cffafe; gap: 10px; }
+        .argus-input-area input { flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #cffafe; outline: none; }
+        .argus-input-area button { background: #06b6d4; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    </style>
 </head>
-<body class="bg-lightbg text-textmain font-sans min-h-screen flex flex-col">
+<body class="bg-lightbg text-textmain h-screen flex overflow-hidden">
 
-    <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-black text-gray-900 tracking-tight">Air Quality</h1>
-                <a href='https://argusx.com.mx/'class="text-[10px] uppercase font-bold text-gray-400 tracking-widest mt-[-2px]">Powered by ArgusX</a>
-            </div>
-            <div class="flex space-x-6 text-sm font-medium text-gray-600">
-                <span class="text-xs font-semibold bg-gray-100 px-3 py-1 rounded-full">Guadalajara, Jalisco</span>
-            </div>
+    <aside class="w-64 bg-white border-r border-cyan-100 flex flex-col p-5 shadow-[1px_0_10px_rgba(6,182,212,0.05)] z-10">
+        <div class="mb-10">
+            <h1 class="text-2xl font-black text-cyan-900 tracking-tight">Air Quality</h1>
+            <p class="text-xs font-medium text-textmuted mt-1">
+                Powered by <a href="https://argusx.com.mx/" target="_blank" class="text-primary font-bold hover:underline">ArgusX</a>
+            </p>
         </div>
-    </nav>
 
-    <main class="flex-grow p-4 md:p-6 max-w-5xl mx-auto w-full">
+        <nav class="flex flex-col gap-2 flex-1">
+            <button onclick="switchTab('dashboard', this)" class="nav-btn w-full text-left px-4 py-3 rounded-lg font-medium transition-colors bg-cyan-50 text-primary flex items-center gap-3">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                Dashboard
+            </button>
+            <button onclick="switchTab('informacion', this)" class="nav-btn w-full text-left px-4 py-3 rounded-lg font-medium text-textmuted hover:bg-lightbg hover:text-textmain transition-colors flex items-center gap-3">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                Información
+            </button>
+        </nav>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <a href="https://github.com/ArgusX-dev/AirPollution_Prediction_AI" target="_blank" class="mt-auto bg-white border border-cyan-200 text-textmain px-4 py-3 rounded-lg font-bold text-center hover:bg-lightbg transition-colors flex justify-center items-center gap-2">
+            <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+            Docs
+        </a>
+    </aside>
 
-            <div class="bg-card rounded-2xl shadow-md border border-gray-200 p-6">
-                <h3 class="text-xs font-bold text-textmuted uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Clima Actual</h3>
+    <main class="flex-1 overflow-y-auto p-8 lg:p-12">
+        <div class="max-w-5xl mx-auto">
 
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <p class="text-[10px] text-textmuted uppercase font-bold">Temperatura</p>
-                        <span class="text-2xl font-black text-gray-800" id="txt-temp">--°C</span>
+            <section id="dashboard" class="content-section active">
+                <div class="flex justify-between items-end mb-8">
+                    <h2 class="text-3xl font-bold text-cyan-950">Dashboard General</h2>
+                    <span class="text-sm font-semibold bg-white border border-cyan-200 px-4 py-1.5 rounded-full shadow-sm text-cyan-800">📍 Guadalajara, Jalisco</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 p-6">
+                        <h3 class="text-xs font-bold text-textmuted uppercase tracking-wider mb-4 border-b border-cyan-50 pb-2">Clima Actual</h3>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <p class="text-[10px] text-textmuted uppercase font-bold">Temperatura</p>
+                                <span class="text-2xl font-black text-cyan-900" id="txt-temp">--°C</span>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-textmuted uppercase font-bold">Viento</p>
+                                <span class="text-2xl font-black text-cyan-900" id="txt-wind">-- m/s</span>
+                            </div>
+                        </div>
+                        <div class="bg-cyan-50 rounded-xl p-5 border border-cyan-100 flex justify-between items-center">
+                            <div>
+                                <p class="text-[10px] text-textmuted uppercase font-bold mb-1">Riesgo NOM-2023</p>
+                                <div class="text-3xl font-black text-cyan-900" id="txt-pollutant">Nivel --</div>
+                            </div>
+                            <div id="badge-quality" class="px-4 py-2 rounded-lg text-sm font-black uppercase shadow-sm border border-cyan-200 bg-white">Cargando</div>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-[10px] text-textmuted uppercase font-bold">Viento</p>
-                        <span class="text-2xl font-black text-gray-800" id="txt-wind">-- m/s</span>
+
+                    <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 overflow-hidden h-64 md:h-auto relative">
+                        <div id="map" class="w-full h-full z-0"></div>
                     </div>
                 </div>
 
-                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 flex justify-between items-center">
-                    <div>
-                        <p class="text-[10px] text-textmuted uppercase font-bold mb-1">Riesgo NOM-2023</p>
-                        <div class="text-3xl font-black text-gray-800" id="txt-pollutant">Nivel --</div>
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-cyan-950 mb-3">Recomendaciones Activas</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="advice-container">
+
                     </div>
-                    <div id="badge-quality" class="px-4 py-2 rounded-lg text-sm font-black uppercase shadow-sm">Cargando</div>
                 </div>
-            </div>
 
-            <div class="bg-card rounded-2xl shadow-md border border-gray-200 overflow-hidden h-64 md:h-auto relative">
-                <div id="map" class="w-full h-full"></div>
-            </div>
+                <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 p-6 w-full h-80 flex flex-col">
+                    <h3 class="text-xs font-bold text-textmuted uppercase tracking-wider mb-2">Pronóstico de Riesgo (Próx. 3 Hrs)</h3>
+                    <p class="text-xs text-cyan-700 mb-4">Modelo XGBoost - Escala 1 (Buena) a 5 (Extremadamente Mala)</p>
+                    <div class="flex-grow relative w-full">
+                        <canvas id="forecastChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="informacion" class="content-section">
+                <h2 class="text-3xl font-bold text-cyan-950 mb-8">Información del Sistema</h2>
+
+                <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 p-8 space-y-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-cyan-900 mb-2">Sobre nuestros datos</h3>
+                            <p class="text-cyan-800 leading-relaxed">
+                            El modelo predictivo de ArgusX se alimenta de lecturas históricas y en tiempo real, integrando datos obtenidos a través de OpenWeather que abarcan desde 2021 hasta la fecha actual. Este motor analiza múltiples variables meteorológicas y contaminantes para inferir la calidad del aire con alta precisión.
+                            <strong class="text-cyan-950">
+                            El modelo es reentrenado y actualizado automáticamente según los pipelines de MLOps configurados, realizándose este proceso de forma mensual para incorporar los cambios más recientes y mantener la mayor exactitud posible en las predicciones.
+                            </strong>
+                            </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-cyan-900 mb-2">La Norma Ambiental Oficial</h3>
+                            <p class="text-cyan-800 leading-relaxed">
+                            Nuestro sistema clasifica la calidad del aire basándose en los estándares oficiales ambientales. Es importante conocer las normativas que regulan los niveles de PM10, PM2.5 y Ozono para proteger la salud pública.
+                            La NOM-2023 establece los criterios para la evaluación y comunicación del Índice de Calidad del Aire y Riesgos a la Salud, definiendo rangos y umbrales de contaminantes para informar de manera clara el nivel de exposición y sus posibles efectos en la salud.
+                            </p>
+                    </div>
+
+                    <hr class="border-cyan-100">
+
+                    <div>
+                        <h3 class="text-lg font-bold text-cyan-900 mb-4">Consultas Gubernamentales</h3>
+                        <p class="text-cyan-800 leading-relaxed mb-4">Para consultar la red oficial de monitoreo de calidad del aire del Estado de Jalisco u otras zonas específicas de Guadalajara, te invitamos a visitar el portal oficial:</p>
+                        <a href="https://aire.jalisco.gob.mx/" target="_blank" class="inline-block bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-cyan-600 transition-colors">Visitar sitio de SEMADET</a>
+                    </div>
+                </div>
+            </section>
 
         </div>
-
-        <div class="bg-card rounded-2xl shadow-md border border-gray-200 p-6 w-full h-72 flex flex-col">
-            <h3 class="text-xs font-bold text-textmuted uppercase tracking-wider mb-2">Pronóstico de Riesgo (Próx. 3 Hrs)</h3>
-            <p class="text-xs text-gray-400 mb-4">Modelo XGBoost - Escala 1 (Buena) a 5 (Extremadamente Mala)</p>
-            <div class="flex-grow relative w-full">
-                <canvas id="forecastChart"></canvas>
-            </div>
-        </div>
-
     </main>
 
+    <div id="argus-chatbot-widget">
+        <div id="argus-chat-window">
+            <div class="argus-header">
+                Argus AI
+                <button onclick="toggleArgusChat()" class="argus-close-btn">✕</button>
+            </div>
+            <div class="argus-messages" id="argus-chat-box">
+                <div class="argus-message argus-bot">Sistema en línea. Soy el asistente de IA de ArgusX. ¿En qué puedo ayudarte hoy?</div>
+            </div>
+            <div class="argus-input-area">
+                <input type="text" id="argus-user-input" placeholder="Pregunta algo..." onkeypress="if(event.key === 'Enter') sendArgusMessage()">
+                <button onclick="sendArgusMessage()">Enviar</button>
+            </div>
+        </div>
+        <button id="argus-chat-toggle" onclick="toggleArgusChat()">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+        </button>
+    </div>
+
     <script>
-        // 1. Inicializar Mapa (Mucho más pequeño)
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-cyan-50', 'text-primary');
+                btn.classList.add('text-textmuted');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('bg-cyan-50', 'text-primary');
+            btnElement.classList.remove('text-textmuted');
+
+            if(tabId === 'dashboard' && typeof map !== 'undefined') {
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+        }
+
         const map = L.map('map', {zoomControl: false}).setView([20.6596, -103.3496], 11);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-        // Marcador Discreto
         L.circleMarker([20.6596, -103.3496], {
-            radius: 8, color: '#0f172a', fillColor: '#475569', fillOpacity: 0.8, weight: 2
+            radius: 8, color: '#0891b2', fillColor: '#06b6d4', fillOpacity: 0.8, weight: 2
         }).addTo(map).bindPopup('<b class="text-sm">Guadalajara</b><br>Calidad del Aire');
 
-        // 2. Gráfica de 3 Horas (Ajustada para niveles 1 al 5)
         const ctx = document.getElementById('forecastChart').getContext('2d');
         let forecastChart = new Chart(ctx, {
             type: 'line',
@@ -92,11 +216,11 @@
                 datasets: [{
                     label: 'Nivel de Riesgo',
                     data: [0,0,0],
-                    borderColor: '#334155',
-                    backgroundColor: 'rgba(51, 65, 85, 0.1)',
+                    borderColor: '#06b6d4',
+                    backgroundColor: 'rgba(6, 182, 212, 0.1)',
                     borderWidth: 3,
                     pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#0f172a',
+                    pointBorderColor: '#06b6d4',
                     pointRadius: 6,
                     fill: true,
                     tension: 0.4
@@ -106,28 +230,22 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: {
-                        min: 1, max: 5, // Forzamos el límite del 1 al 5
-                        ticks: { stepSize: 1, color: '#64748b', font: { weight: 'bold' } }
-                    },
-                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { weight: 'bold' } } }
+                    y: { min: 1, max: 5, ticks: { stepSize: 1, color: '#0e7490', font: { weight: 'bold' } } },
+                    x: { grid: { display: false }, ticks: { color: '#0e7490', font: { weight: 'bold' } } }
                 },
                 plugins: { legend: { display: false } }
             }
         });
 
-        // 3. Obtener Datos
         async function updateDashboard() {
             try {
                 const res = await fetch('/api/dashboard');
                 const data = await res.json();
 
-                // Textos
                 document.getElementById('txt-temp').innerText = `${data.current.temp.toFixed(1)}°C`;
                 document.getElementById('txt-wind').innerText = `${data.current.w_speed.toFixed(1)} m/s`;
-                document.getElementById('txt-pollutant').innerHTML = `Nivel ${data.current.current_risk_severity}<span class="text-sm font-normal text-gray-500 block">Principal: ${data.current.main_pollutant.toUpperCase()}</span>`;
+                document.getElementById('txt-pollutant').innerHTML = `Nivel ${data.current.current_risk_severity}<span class="text-sm font-normal text-cyan-600 block mt-1">Principal: ${data.current.main_pollutant.toUpperCase()}</span>`;
 
-                // Botón de Calidad NOM-2023
                 const badge = document.getElementById('badge-quality');
                 const riskColors = {
                     1: {text: "Buena", cls: "bg-green-100 text-green-700 border-green-200"},
@@ -143,7 +261,21 @@
                 badge.innerText = config.text;
                 badge.className = `px-4 py-2 rounded-lg text-sm font-black uppercase shadow-sm border ${config.cls}`;
 
-                // Actualizar gráfica
+                const adviceContainer = document.getElementById('advice-container');
+                let airAdviceHtml = '';
+
+                if (riskLevel <= 2) {
+                    airAdviceHtml = `<div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">🏃</span><div><h4 class="font-bold text-green-800 text-sm mb-1">Aire Limpio</h4><p class="text-xs text-green-700 leading-relaxed">Excelente momento para actividades al aire libre. La ventilación de espacios cerrados es muy recomendada.</p></div></div>`;
+                } else if (riskLevel === 3) {
+                    airAdviceHtml = `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">😷</span><div><h4 class="font-bold text-orange-800 text-sm mb-1">Precaución Recomendada</h4><p class="text-xs text-orange-700 leading-relaxed">Grupos sensibles deben evitar esfuerzos prolongados. Considerar el uso de cubrebocas en exteriores.</p></div></div>`;
+                } else {
+                    airAdviceHtml = `<div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">⚠️</span><div><h4 class="font-bold text-red-800 text-sm mb-1">Alerta Sanitaria</h4><p class="text-xs text-red-700 leading-relaxed">Evita salir si no es necesario. Uso obligatorio de mascarilla N95. Mantén puertas y ventanas cerradas.</p></div></div>`;
+                }
+
+                const sunAdviceHtml = `<div class="bg-cyan-50 border border-cyan-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">☀️</span><div><h4 class="font-bold text-cyan-800 text-sm mb-1">Protección UV</h4><p class="text-xs text-cyan-700 leading-relaxed">Si sales de día, utiliza protector solar FPS 50+. Evita la exposición prolongada al sol.</p></div></div>`;
+
+                adviceContainer.innerHTML = airAdviceHtml + sunAdviceHtml;
+
                 forecastChart.data.datasets[0].data = data.forecast;
                 forecastChart.update();
 
@@ -152,8 +284,48 @@
                 document.getElementById('badge-quality').innerText = "Off";
             }
         }
-
         window.onload = updateDashboard;
+
+        function toggleArgusChat() {
+            const chatWindow = document.getElementById('argus-chat-window');
+            chatWindow.style.display = (chatWindow.style.display === 'none' || chatWindow.style.display === '') ? 'flex' : 'none';
+        }
+
+        async function sendArgusMessage() {
+            const input = document.getElementById('argus-user-input');
+            const chatBox = document.getElementById('argus-chat-box');
+            const text = input.value.trim();
+            if (!text) return;
+
+            chatBox.innerHTML += `<div class="argus-message argus-user">${text}</div>`;
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const loadingId = 'load-' + Date.now();
+            chatBox.innerHTML += `<div class="argus-message argus-bot" id="${loadingId}">Procesando...</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query: text, session_id: "dashboard_user"})
+                });
+                const data = await response.json();
+
+                document.getElementById(loadingId).remove();
+                if(data.error) {
+                    chatBox.innerHTML += `<div class="argus-message argus-bot" style="color:#ef4444;">Error: ${data.error}</div>`;
+                } else {
+                    const formattedResponse = data.response.replace(/\n/g, '<br>');
+                    chatBox.innerHTML += `<div class="argus-message argus-bot">${formattedResponse}</div>`;
+                }
+            } catch (e) {
+                document.getElementById(loadingId).remove();
+                chatBox.innerHTML += `<div class="argus-message argus-bot" style="color:#ef4444;">Fallo de conexión.</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
     </script>
 </body>
 </html>
