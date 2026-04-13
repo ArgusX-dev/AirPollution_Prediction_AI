@@ -10,9 +10,6 @@ from air_quality.entity.config_entity import TrainingPipelineConfig,DataIngestio
 from air_quality.entity.artifact_entity import DataIngestionArtifact,DataValidationArtifact,DataTransformationArtifact,ModelTrainerArtifact,ModelPusherArtifact
 
 
-
-
-
 class TrainingPipeline:
     def __init__(self):
         self.training_pipeline_config = TrainingPipelineConfig()

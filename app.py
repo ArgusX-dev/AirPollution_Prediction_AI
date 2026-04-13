@@ -20,14 +20,17 @@ templates = Jinja2Templates(directory="templates")
 try:
     model = load_object('final_model/model.pkl')
     preprocessor = load_object('final_model/preprocessor.pkl')
-    print("Modelos locales cargados con éxito.")
+    print("Local models uploaded.")
 except Exception as e:
-    print(f"⚠️ Advertencia: Modelos no encontrados. El servidor iniciará sin ellos a la espera de Airflow. Detalle: {e}")
+    print(f"Warning models are not uploaded, starting service without fresh models: {e}")
     model = None
     preprocessor = None
 WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "argus_secret")
 
+
 def download_and_reload_model():
+    global model, preprocessor
+
     print("Starting hot reload of the model...")
     try:
         s3 = boto3.client('s3')
@@ -36,12 +39,14 @@ def download_and_reload_model():
         s3.download_file(bucket_name, 'final_model/model.pkl', 'final_model/model.pkl')
         s3.download_file(bucket_name, 'final_model/preprocessor.pkl', 'final_model/preprocessor.pkl')
 
-        app.state.preprocessor = load_object('final_model/preprocessor.pkl')
-        app.state.model = load_object('final_model/model.pkl')
+        # 2. Asignamos directo a las variables globales (adiós app.state)
+        preprocessor = load_object('final_model/preprocessor.pkl')
+        model = load_object('final_model/model.pkl')
+
         print("Model successfully updated in production!")
 
     except Exception as e:
-        print(f"Error updating the model: {e}")
+        print(f"Error updating the model: {e}"
 
 @app.post("/api/admin/reload-model")
 async def reload_model(background_tasks: BackgroundTasks, x_api_key: str = Header(None)):
