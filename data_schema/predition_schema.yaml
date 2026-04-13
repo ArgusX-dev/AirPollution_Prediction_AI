@@ -1,0 +1,29 @@
+columns:
+  date_hour: object
+  temperature_c: float64
+  humidity_pct: float64
+  pressure_hpa: float64
+  wind_speed_ms: float64
+  wind_direction_deg: float64
+  cloudiness_pct: float64
+  co: float64
+  no2: float64
+  o3: float64
+  pm2_5: float64
+  pm10: float64
+
+datetime_features:
+  - date_hour
+
+numerical_features:
+  - temperature_c
+  - humidity_pct
+  - pressure_hpa
+  - wind_speed_ms
+  - wind_direction_deg
+  - cloudiness_pct
+  - co
+  - no2
+  - o3
+  - pm2_5
+  - pm10

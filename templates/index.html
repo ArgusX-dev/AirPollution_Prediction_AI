@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Quality | GDL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: { colors: { brand: '#0f172a', lightbg: '#f8fafc', card: '#ffffff', textmain: '#334155', textmuted: '#64748b' } }
+            }
+        }
+    </script>
+</head>
+<body class="bg-lightbg text-textmain font-sans min-h-screen flex flex-col">
+
+    <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-black text-gray-900 tracking-tight">Air Quality</h1>
+                <a href='https://argusx.com.mx/'class="text-[10px] uppercase font-bold text-gray-400 tracking-widest mt-[-2px]">Powered by ArgusX</a>
+            </div>
+            <div class="flex space-x-6 text-sm font-medium text-gray-600">
+                <span class="text-xs font-semibold bg-gray-100 px-3 py-1 rounded-full">Guadalajara, Jalisco</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow p-4 md:p-6 max-w-5xl mx-auto w-full">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+            <div class="bg-card rounded-2xl shadow-md border border-gray-200 p-6">
+                <h3 class="text-xs font-bold text-textmuted uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Clima Actual</h3>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <p class="text-[10px] text-textmuted uppercase font-bold">Temperatura</p>
+                        <span class="text-2xl font-black text-gray-800" id="txt-temp">--°C</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-textmuted uppercase font-bold">Viento</p>
+                        <span class="text-2xl font-black text-gray-800" id="txt-wind">-- m/s</span>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] text-textmuted uppercase font-bold mb-1">Riesgo NOM-2023</p>
+                        <div class="text-3xl font-black text-gray-800" id="txt-pollutant">Nivel --</div>
+                    </div>
+                    <div id="badge-quality" class="px-4 py-2 rounded-lg text-sm font-black uppercase shadow-sm">Cargando</div>
+                </div>
+            </div>
+
+            <div class="bg-card rounded-2xl shadow-md border border-gray-200 overflow-hidden h-64 md:h-auto relative">
+                <div id="map" class="w-full h-full"></div>
+            </div>
+
+        </div>
+
+        <div class="bg-card rounded-2xl shadow-md border border-gray-200 p-6 w-full h-72 flex flex-col">
+            <h3 class="text-xs font-bold text-textmuted uppercase tracking-wider mb-2">Pronóstico de Riesgo (Próx. 3 Hrs)</h3>
+            <p class="text-xs text-gray-400 mb-4">Modelo XGBoost - Escala 1 (Buena) a 5 (Extremadamente Mala)</p>
+            <div class="flex-grow relative w-full">
+                <canvas id="forecastChart"></canvas>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // 1. Inicializar Mapa (Mucho más pequeño)
+        const map = L.map('map', {zoomControl: false}).setView([20.6596, -103.3496], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // Marcador Discreto
+        L.circleMarker([20.6596, -103.3496], {
+            radius: 8, color: '#0f172a', fillColor: '#475569', fillOpacity: 0.8, weight: 2
+        }).addTo(map).bindPopup('<b class="text-sm">Guadalajara</b><br>Calidad del Aire');
+
+        // 2. Gráfica de 3 Horas (Ajustada para niveles 1 al 5)
+        const ctx = document.getElementById('forecastChart').getContext('2d');
+        let forecastChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['+1h', '+2h', '+3h'],
+                datasets: [{
+                    label: 'Nivel de Riesgo',
+                    data: [0,0,0],
+                    borderColor: '#334155',
+                    backgroundColor: 'rgba(51, 65, 85, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#0f172a',
+                    pointRadius: 6,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: 1, max: 5, // Forzamos el límite del 1 al 5
+                        ticks: { stepSize: 1, color: '#64748b', font: { weight: 'bold' } }
+                    },
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { weight: 'bold' } } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // 3. Obtener Datos
+        async function updateDashboard() {
+            try {
+                const res = await fetch('/api/dashboard');
+                const data = await res.json();
+
+                // Textos
+                document.getElementById('txt-temp').innerText = `${data.current.temp.toFixed(1)}°C`;
+                document.getElementById('txt-wind').innerText = `${data.current.w_speed.toFixed(1)} m/s`;
+                document.getElementById('txt-pollutant').innerHTML = `Nivel ${data.current.current_risk_severity}<span class="text-sm font-normal text-gray-500 block">Principal: ${data.current.main_pollutant.toUpperCase()}</span>`;
+
+                // Botón de Calidad NOM-2023
+                const badge = document.getElementById('badge-quality');
+                const riskColors = {
+                    1: {text: "Buena", cls: "bg-green-100 text-green-700 border-green-200"},
+                    2: {text: "Aceptable", cls: "bg-yellow-100 text-yellow-700 border-yellow-200"},
+                    3: {text: "Mala", cls: "bg-orange-100 text-orange-700 border-orange-200"},
+                    4: {text: "Muy Mala", cls: "bg-red-100 text-red-700 border-red-200"},
+                    5: {text: "Extrema", cls: "bg-purple-100 text-purple-700 border-purple-200"}
+                };
+
+                let riskLevel = data.current.current_risk_severity;
+                let config = riskColors[riskLevel] || riskColors[5];
+
+                badge.innerText = config.text;
+                badge.className = `px-4 py-2 rounded-lg text-sm font-black uppercase shadow-sm border ${config.cls}`;
+
+                // Actualizar gráfica
+                forecastChart.data.datasets[0].data = data.forecast;
+                forecastChart.update();
+
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('badge-quality').innerText = "Off";
+            }
+        }
+
+        window.onload = updateDashboard;
+    </script>
+</body>
+</html>
