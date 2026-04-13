@@ -89,8 +89,12 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 p-6">
-                        <h3 class="text-xs font-bold text-textmuted uppercase tracking-wider mb-4 border-b border-cyan-50 pb-2">Clima Actual</h3>
+                    <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 p-6 flex flex-col">
+                        <div class="flex justify-between items-end mb-4 border-b border-cyan-50 pb-2">
+                            <h3 class="text-xs font-bold text-textmuted uppercase tracking-wider m-0">Clima Actual</h3>
+                            <span id="current-date-display" class="text-[10px] font-bold text-cyan-600 bg-cyan-50 px-2 py-1 rounded-md">--/--/----</span>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4 mb-6">
                             <div>
                                 <p class="text-[10px] text-textmuted uppercase font-bold">Temperatura</p>
@@ -101,12 +105,19 @@
                                 <span class="text-2xl font-black text-cyan-900" id="txt-wind">-- m/s</span>
                             </div>
                         </div>
-                        <div class="bg-cyan-50 rounded-xl p-5 border border-cyan-100 flex justify-between items-center">
+
+                        <div class="bg-cyan-50 rounded-xl p-5 border border-cyan-100 flex justify-between items-center mb-4">
                             <div>
                                 <p class="text-[10px] text-textmuted uppercase font-bold mb-1">Riesgo NOM-2023</p>
                                 <div class="text-3xl font-black text-cyan-900" id="txt-pollutant">Nivel --</div>
                             </div>
                             <div id="badge-quality" class="px-4 py-2 rounded-lg text-sm font-black uppercase shadow-sm border border-cyan-200 bg-white">Cargando</div>
+                        </div>
+
+                        <div class="mt-auto text-right">
+                            <a href="https://openweathermap.org/" target="_blank" class="text-[10px] font-semibold text-cyan-500 hover:text-cyan-800 transition-colors">
+                                Provided by OpenWeather
+                            </a>
                         </div>
                     </div>
 
@@ -137,20 +148,20 @@
                 <div class="bg-card rounded-2xl shadow-sm border border-cyan-100 p-8 space-y-8">
                     <div>
                         <h3 class="text-lg font-bold text-cyan-900 mb-2">Sobre nuestros datos</h3>
-                            <p class="text-cyan-800 leading-relaxed">
+                        <p class="text-cyan-800 leading-relaxed">
                             El modelo predictivo de ArgusX se alimenta de lecturas históricas y en tiempo real, integrando datos obtenidos a través de OpenWeather que abarcan desde 2021 hasta la fecha actual. Este motor analiza múltiples variables meteorológicas y contaminantes para inferir la calidad del aire con alta precisión.
                             <strong class="text-cyan-950">
                             El modelo es reentrenado y actualizado automáticamente según los pipelines de MLOps configurados, realizándose este proceso de forma mensual para incorporar los cambios más recientes y mantener la mayor exactitud posible en las predicciones.
                             </strong>
-                            </p>
+                        </p>
                     </div>
 
                     <div>
                         <h3 class="text-lg font-bold text-cyan-900 mb-2">La Norma Ambiental Oficial</h3>
-                            <p class="text-cyan-800 leading-relaxed">
+                        <p class="text-cyan-800 leading-relaxed">
                             Nuestro sistema clasifica la calidad del aire basándose en los estándares oficiales ambientales. Es importante conocer las normativas que regulan los niveles de PM10, PM2.5 y Ozono para proteger la salud pública.
                             La NOM-2023 establece los criterios para la evaluación y comunicación del Índice de Calidad del Aire y Riesgos a la Salud, definiendo rangos y umbrales de contaminantes para informar de manera clara el nivel de exposición y sus posibles efectos en la salud.
-                            </p>
+                        </p>
                     </div>
 
                     <hr class="border-cyan-100">
@@ -239,12 +250,20 @@
 
         async function updateDashboard() {
             try {
+                const dateDisplay = document.getElementById('current-date-display');
+                if (dateDisplay) {
+                    const opcionesFecha = { day: 'numeric', month: 'short', year: 'numeric' };
+                    dateDisplay.innerText = new Date().toLocaleDateString('es-MX', opcionesFecha);
+                }
+
                 const res = await fetch('/api/dashboard');
                 const data = await res.json();
 
-                document.getElementById('txt-temp').innerText = `${data.current.temp.toFixed(1)}°C`;
-                document.getElementById('txt-wind').innerText = `${data.current.w_speed.toFixed(1)} m/s`;
-                document.getElementById('txt-pollutant').innerHTML = `Nivel ${data.current.current_risk_severity}<span class="text-sm font-normal text-cyan-600 block mt-1">Principal: ${data.current.main_pollutant.toUpperCase()}</span>`;
+                if (document.getElementById('txt-temp')) {
+                    document.getElementById('txt-temp').innerText = `${data.current.temp.toFixed(1)}°C`;
+                    document.getElementById('txt-wind').innerText = `${data.current.w_speed.toFixed(1)} m/s`;
+                    document.getElementById('txt-pollutant').innerHTML = `Nivel ${data.current.current_risk_severity}<span class="text-sm font-normal text-cyan-600 block mt-1">Principal: ${data.current.main_pollutant.toUpperCase()}</span>`;
+                }
 
                 const badge = document.getElementById('badge-quality');
                 const riskColors = {
@@ -258,30 +277,36 @@
                 let riskLevel = data.current.current_risk_severity;
                 let config = riskColors[riskLevel] || riskColors[5];
 
-                badge.innerText = config.text;
-                badge.className = `px-4 py-2 rounded-lg text-sm font-black uppercase shadow-sm border ${config.cls}`;
-
-                const adviceContainer = document.getElementById('advice-container');
-                let airAdviceHtml = '';
-
-                if (riskLevel <= 2) {
-                    airAdviceHtml = `<div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">🏃</span><div><h4 class="font-bold text-green-800 text-sm mb-1">Aire Limpio</h4><p class="text-xs text-green-700 leading-relaxed">Excelente momento para actividades al aire libre. La ventilación de espacios cerrados es muy recomendada.</p></div></div>`;
-                } else if (riskLevel === 3) {
-                    airAdviceHtml = `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">😷</span><div><h4 class="font-bold text-orange-800 text-sm mb-1">Precaución Recomendada</h4><p class="text-xs text-orange-700 leading-relaxed">Grupos sensibles deben evitar esfuerzos prolongados. Considerar el uso de cubrebocas en exteriores.</p></div></div>`;
-                } else {
-                    airAdviceHtml = `<div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">⚠️</span><div><h4 class="font-bold text-red-800 text-sm mb-1">Alerta Sanitaria</h4><p class="text-xs text-red-700 leading-relaxed">Evita salir si no es necesario. Uso obligatorio de mascarilla N95. Mantén puertas y ventanas cerradas.</p></div></div>`;
+                if (badge) {
+                    badge.innerText = config.text;
+                    badge.className = `px-4 py-2 rounded-lg text-sm font-black uppercase shadow-sm border ${config.cls}`;
                 }
 
-                const sunAdviceHtml = `<div class="bg-cyan-50 border border-cyan-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">☀️</span><div><h4 class="font-bold text-cyan-800 text-sm mb-1">Protección UV</h4><p class="text-xs text-cyan-700 leading-relaxed">Si sales de día, utiliza protector solar FPS 50+. Evita la exposición prolongada al sol.</p></div></div>`;
+                const adviceContainer = document.getElementById('advice-container');
+                if (adviceContainer) {
+                    let airAdviceHtml = '';
 
-                adviceContainer.innerHTML = airAdviceHtml + sunAdviceHtml;
+                    if (riskLevel <= 2) {
+                        airAdviceHtml = `<div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">🏃</span><div><h4 class="font-bold text-green-800 text-sm mb-1">Aire Limpio</h4><p class="text-xs text-green-700 leading-relaxed">Excelente momento para actividades al aire libre. La ventilación de espacios cerrados es muy recomendada.</p></div></div>`;
+                    } else if (riskLevel === 3) {
+                        airAdviceHtml = `<div class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">😷</span><div><h4 class="font-bold text-orange-800 text-sm mb-1">Precaución Recomendada</h4><p class="text-xs text-orange-700 leading-relaxed">Grupos sensibles deben evitar esfuerzos prolongados. Considerar el uso de cubrebocas en exteriores.</p></div></div>`;
+                    } else {
+                        airAdviceHtml = `<div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">⚠️</span><div><h4 class="font-bold text-red-800 text-sm mb-1">Alerta Sanitaria</h4><p class="text-xs text-red-700 leading-relaxed">Evita salir si no es necesario. Uso obligatorio de mascarilla N95. Mantén puertas y ventanas cerradas.</p></div></div>`;
+                    }
 
-                forecastChart.data.datasets[0].data = data.forecast;
-                forecastChart.update();
+                    const sunAdviceHtml = `<div class="bg-cyan-50 border border-cyan-200 rounded-xl p-4 flex items-start gap-3"><span class="text-2xl">☀️</span><div><h4 class="font-bold text-cyan-800 text-sm mb-1">Protección UV</h4><p class="text-xs text-cyan-700 leading-relaxed">Si sales de día, utiliza protector solar FPS 50+. Evita la exposición prolongada al sol.</p></div></div>`;
+
+                    adviceContainer.innerHTML = airAdviceHtml + sunAdviceHtml;
+                }
+
+                if (typeof forecastChart !== 'undefined') {
+                    forecastChart.data.datasets[0].data = data.forecast;
+                    forecastChart.update();
+                }
 
             } catch (error) {
-                console.error("Error:", error);
-                document.getElementById('badge-quality').innerText = "Off";
+                const badge = document.getElementById('badge-quality');
+                if (badge) badge.innerText = "Error API";
             }
         }
         window.onload = updateDashboard;
