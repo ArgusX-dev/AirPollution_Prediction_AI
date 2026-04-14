@@ -8,7 +8,6 @@ from langchain_core.chat_history import BaseChatMessageHistory
 from air_quality.exception.exception import AirQualityException
 from langchain.tools import tool
 from .config import Config
-from app import model,preprocessor,get_real_time_data
 import numpy as np
 import pandas as pd
 
