@@ -33,4 +33,5 @@ langchain-groq
 langchain-core
 psycopg2-binary
 duckduckgo-search
+pytest
 #-e .

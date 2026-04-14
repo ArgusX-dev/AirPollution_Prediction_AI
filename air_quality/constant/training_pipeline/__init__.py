@@ -11,7 +11,7 @@ PIPELINE_NAME: str = 'Air_Quality_Risk_Prediction' # Actualizado
 ARTIFACT_DIR: str = 'artifacts'
 FILE_NAME: str = 'weather_data.csv'
 TRAIN_FILE_NAME: str = 'train.csv'
-TEST_FILE_NAME: str = 'test.csv'
+TEST_FILE_NAME: str = 'tests.csv'
 SCHEMA_FILE_PATH = os.path.join('data_schema','schema.yaml')
 
 
@@ -43,7 +43,7 @@ PREPROCESSING_OBJECT_FILE_NAME = "preprocessing.pkl"
 DATA_TRANSFORMATION_TARGET_LAG: int = 24
 DATA_TRANSFORMATION_TRAIN_FILE_PATH: str = "train.npy"
 
-DATA_TRANSFORMATION_TEST_FILE_PATH: str = "test.npy"
+DATA_TRANSFORMATION_TEST_FILE_PATH: str = "tests.npy"
 
 
 '''
