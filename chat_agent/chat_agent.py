@@ -14,6 +14,9 @@ import pandas as pd
 
 @tool
 def predict_future_air_quality(hours_ahead: int = 3) -> str:
+    """
+    Util EXCLUSIVAMENTE para predecir, pronosticar o estimar la calidad del aire y el nivel de riesgo en el futuro (proximas 3 horas).
+    """
 
     from app import model, preprocessor, get_real_time_data
 
@@ -104,7 +107,7 @@ class SQLAgentBuilder:
                                     3. REDONDEO HUMANO: Redondea a MAXIMO un decimal (ej. 21.5).
                                     4. TUS HERRAMIENTAS (USO ESTRICTO): 
                                        - Usa SQL SOLO para datos pasados o actuales.
-                                       - Usa 'predict_future_air_quality' SOLO cuando el usuario pregunte por el PRONOSTICO, el FUTURO, o las PROXIMAS HORAS.
+                                       - Usa 'predict_future_air_quality' SOLO cuando el usuario pregunte por el PRONOSTICO, el FUTURO, o las PROXIMAS 3 HORAS.
                                        - Usa INTERNET SOLO para buscar definiciones o normativas (ej. "NOM-2023 ambiental").
                                     5. RECOMENDACIONES DE SALUD: Al dar un nivel de calidad, da una breve recomendacion (Ej. Nivel 1 o 2: disfruta el aire libre. Nivel 3+: reduce actividades).
 
