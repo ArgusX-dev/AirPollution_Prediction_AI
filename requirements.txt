@@ -32,6 +32,6 @@ langchain-community
 langchain-groq
 langchain-core
 psycopg2-binary
-duckduckgo-search
+duckduckgo-search>=5.0.0
 pytest
 #-e .
