@@ -2,13 +2,10 @@ statsmodels
 pandas
 numpy
 scikit-learn
-matplotlib
-seaborn
 tqdm
 torch
 torch_geometric
 setuptools
-certifi
 boto3
 dotenv
 scipy
@@ -24,7 +21,6 @@ jinja2
 pydantic
 python-multipart
 sqlalchemy
-psycopg2-binary
 xgboost
 groq
 langchain
