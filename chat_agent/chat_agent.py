@@ -17,7 +17,10 @@ def predict_future_air_quality(hours_ahead: int = 3) -> str:
     """
     Util EXCLUSIVAMENTE para predecir, pronosticar o estimar la calidad del aire y el nivel de riesgo en el futuro (proximas 3 horas).
     """
-
+    try:
+        hours_ahead = int(hours_ahead)
+    except (ValueError, TypeError):
+        hours_ahead = 3
     from app import model, preprocessor, get_real_time_data
 
     if model is None or preprocessor is None:
