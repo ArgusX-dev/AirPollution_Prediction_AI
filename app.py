@@ -222,8 +222,6 @@ except Exception as e:
 class ChatRequest(BaseModel):
     query: str
     session_id: str = "demo_user_01"
-
-
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
     if not argus_bot:

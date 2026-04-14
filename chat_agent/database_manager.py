@@ -14,7 +14,8 @@ class DatabaseManager:
     def connect(self) -> SQLDatabase:
         try:
             if not self.db:
-                self.db = SQLDatabase.from_uri(self.uri)
+                self.db = SQLDatabase.from_uri(self.uri, engine_args={"connect_args": {"connect_timeout": 5}})
             return self.db
         except Exception as e:
-            raise AirQualityException(e, sys)
+            print(f"Conection Error to DB: {e}")
+            return None
