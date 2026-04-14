@@ -13,14 +13,16 @@ import pandas as pd
 
 
 @tool
-def predict_future_air_quality(hours_ahead: int = 3) -> str:
+def predict_future_air_quality(hours_ahead: str = "3") -> str:
     """
-    Util EXCLUSIVAMENTE para predecir, pronosticar o estimar la calidad del aire y el nivel de riesgo en el futuro (proximas 3 horas).
+    Util EXCLUSIVAMENTE para predecir, pronosticar o estimar la calidad del aire y el nivel de riesgo en el futuro (proximas horas).
     """
     try:
-        hours_ahead = int(hours_ahead)
+        horas_float = float(hours_ahead)
+        horas = max(1, int(round(horas_float)))
     except (ValueError, TypeError):
-        hours_ahead = 3
+        horas = 3
+
     from app import model, preprocessor, get_real_time_data
 
     if model is None or preprocessor is None:
@@ -31,7 +33,7 @@ def predict_future_air_quality(hours_ahead: int = 3) -> str:
         last_known_risk = real_data.get('current_risk_severity', 1)
         final_pred = last_known_risk
 
-        for h in range(hours_ahead):
+        for h in range(horas):
             input_dict = {
                 'temperature_c': real_data.get('temp', 0),
                 'humidity_pct': real_data.get('hum', 0),
@@ -69,7 +71,7 @@ def predict_future_air_quality(hours_ahead: int = 3) -> str:
         }
         riesgo_texto = mapa_riesgos.get(final_pred, "Desconocido")
 
-        return f"El pronostico para dentro de {hours_ahead} hora(s) indica una calidad de aire de {riesgo_texto}."
+        return f"El pronostico para dentro de {horas} hora(s) indica una calidad de aire de {riesgo_texto}."
 
     except Exception as e:
         return f"Hubo un error interno al consultar el motor XGBoost: {str(e)}"
@@ -104,17 +106,18 @@ class SQLAgentBuilder:
             )
             system_prefix = """Eres Argus, el analista de datos de IA para ArgusX. HABLA SIEMPRE EN ESPANOL.
 
-                                    REGLAS DE ORO (SI ROMPES ESTO, EL SISTEMA FALLARA):
-                                    1. LIMITE DE 7 DIAS: Cuando pidan datos sin especificar fecha, asume que solo quiere los ultimos 7 dias. NUNCA busques en la base de datos completa.
-                                    2. NUNCA MENCIONES LA BASE DE DATOS: Jamas digas "en la tabla" o "la base de datos SQL". Di "Nuestros registros indican".
-                                    3. REDONDEO HUMANO: Redondea a MAXIMO un decimal (ej. 21.5).
-                                    4. TUS HERRAMIENTAS (USO ESTRICTO): 
-                                       - Usa SQL SOLO para datos pasados o actuales.
-                                       - Usa 'predict_future_air_quality' SOLO cuando el usuario pregunte por el PRONOSTICO, el FUTURO, o las PROXIMAS 3 HORAS.
-                                       - Usa INTERNET SOLO para buscar definiciones o normativas (ej. "NOM-2023 ambiental").
-                                    5. RECOMENDACIONES DE SALUD: Al dar un nivel de calidad, da una breve recomendacion (Ej. Nivel 1 o 2: disfruta el aire libre. Nivel 3+: reduce actividades).
+                                                REGLAS DE ORO (SI ROMPES ESTO, EL SISTEMA FALLARA):
+                                                1. LIMITE DE 7 DIAS: Cuando pidan datos sin especificar fecha, asume que solo quiere los ultimos 7 dias. NUNCA busques en la base de datos completa.
+                                                2. NUNCA MENCIONES LA BASE DE DATOS: Jamas digas "en la tabla" o "la base de datos SQL". Di "Nuestros registros indican".
+                                                3. REDONDEO HUMANO: Redondea a MAXIMO un decimal (ej. 21.5).
+                                                4. TUS HERRAMIENTAS (USO ESTRICTO): 
+                                                   - Usa 'predict_future_air_quality' DE INMEDIATO y SIN CONSULTAR SQL cuando el usuario pregunte por el PRONOSTICO, el FUTURO, o las PROXIMAS HORAS.
+                                                   - IMPORTANTE: Si el usuario pregunta en minutos, HAZ LA CONVERSION a decimal de horas antes de usar la herramienta predictiva (Ej. 120 minutos = 2. 30 minutos = 0.5).
+                                                   - Usa SQL SOLO para datos pasados o actuales. NUNCA busques tablas inventadas.
+                                                   - Usa INTERNET SOLO para buscar definiciones o normativas ambientales (ej. "NOM-2023 ambiental").
+                                                5. RECOMENDACIONES DE SALUD: Al dar un nivel de calidad, da una breve recomendacion (Ej. Nivel 1 o 2: disfruta el aire libre. Nivel 3+: reduce actividades).
 
-                                    Tu objetivo es dar una respuesta natural y directa.
+                                                Tu objetivo es dar una respuesta natural y directa.
             """
             agent_executor = create_sql_agent(
                 llm=self.model,
