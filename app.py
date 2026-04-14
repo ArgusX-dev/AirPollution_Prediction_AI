@@ -222,6 +222,29 @@ except Exception as e:
 class ChatRequest(BaseModel):
     query: str
     session_id: str = "demo_user_01"
+
+
+import traceback
+
+print("--- INICIANDO SECUENCIA DE DESPERTAR DE ARGUS ---")
+try:
+    db_manager = DatabaseManager()
+    db = db_manager.connect()
+
+    if db:
+        print("✅ DB conectada. Construyendo agente...")
+        builder = SQLAgentBuilder(db)
+        argus_bot = builder.build_agent()
+        print("✅ ARGUS ESTÁ VIVO Y LISTO.")
+    else:
+        print("❌ La base de datos devolvió None.")
+        argus_bot = None
+
+except Exception as e:
+    print("❌ FATAL ERROR AL INICIALIZAR ARGUS:")
+    print(traceback.format_exc())  # Esto imprimirá TODA la cadena del error en los logs
+    argus_bot = None
+
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
     if not argus_bot:
