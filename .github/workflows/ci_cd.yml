@@ -39,6 +39,7 @@ jobs:
         DB_HOST: "localhost"
         DB_USER: "dummy_user"
         DB_PASSWORD: "dummy_password"
-        GROQ_API_KEY: "gsk_dummy_key_123456789"
+        GROQ_API_KEY: "gsk_dummy_key_123456789",
+        PYTHONPATH: .
       run: |
         pytest tests/ --cov=air_quality --cov-report=xml -v
