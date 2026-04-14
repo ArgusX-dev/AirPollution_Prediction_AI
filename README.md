@@ -30,7 +30,8 @@ Our goal is to transition from reactive monitoring to proactive prevention. The 
 
 ##  System Architecture (The 3 Pillars)
 
-### 1. Data Engine (DataOps & ETL)
+### 1. Data Engine (DataOps & ETL) 
+### (To view the ETL pipeline, go to the following repository: https://github.com/ArgusX-dev/Air_Quality_ETL_pipeline)
 Orchestrated using Apache Airflow (Astronomer), it ensures that the database (AWS RDS) remains the single source of truth with consistently fresh data. It consists of 3 main DAGs:
 * Backfill DAG: Bulk loading of historical data from 2021 to the present (via OpenWeather API).
 * Hourly Ingestion DAG: Querying and inserting weather data every hour.
