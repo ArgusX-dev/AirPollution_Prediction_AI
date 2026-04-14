@@ -1,61 +1,94 @@
-# 🌤️ ArgusX | Air Quality Prediction AI & Analytics
-> Plataforma predictiva de calidad del aire propulsada por Machine Learning (XGBoost) y un Agente Autónomo LLM, diseñada para monitorear, predecir y alertar sobre riesgos ambientales en Guadalajara, Jalisco.
+# 🌍 ArgusX Air Quality | Predictive MLOps & AI Platform
 
-## 🎯 ¿Por qué construimos ArgusX?
-La contaminación atmosférica es un asesino silencioso en áreas metropolitanas de rápido crecimiento. Construimos ArgusX para resolver un problema de accesibilidad de datos: la información ambiental suele ser estática, difícil de interpretar o llega demasiado tarde. 
+![Python 3.10](https://img.shields.io/badge/Python-3.10-blue.svg)
+![XGBoost](https://img.shields.io/badge/Machine%20Learning-XGBoost-orange.svg)
+![Airflow](https://img.shields.io/badge/DataOps-Apache_Airflow-017CEE.svg)
+![Llama3](https://img.shields.io/badge/LLM-Llama_3.1_%288B%29-04A77D.svg)
+![LangChain](https://img.shields.io/badge/Agent-LangChain%20SQL-gray.svg)
 
-Nuestro objetivo fue crear un sistema proactivo que no solo informe el estado actual, sino que **prediga el riesgo a futuro** y proporcione recomendaciones de salud accionables en tiempo real, basándose estrictamente en normativas ambientales mexicanas (NOM-037-STPS-2023 / NOM-172-SEMARNAT-2019).
+## ArgusX Air Quality 
+Es una plataforma predictiva avanzada diseñada para monitorear, predecir y alertar sobre riesgos ambientales en Guadalajara, Jalisco. 
 
-## 👥 ¿Para quién está dirigido?
-* **Ciudadanía General y Deportistas:** Para la toma de decisiones diarias (salir a correr, ventilar la casa, uso de protector solar).
-* **Población Vulnerable:** Alertas tempranas para personas con afecciones respiratorias (asma, alergias) indicando cuándo es necesario el uso de mascarillas N95.
-* **Investigadores y Analistas:** Acceso rápido a datos históricos mediante nuestro agente interactivo impulsado por IA.
-
----
-
-## 🧠 Arquitectura y MLOps
-Este proyecto es una solución **End-to-End**, abarcando desde la ingesta de datos hasta el despliegue de modelos y la interfaz de usuario.
-
-### 1. El Motor Predictivo (Machine Learning)
-* **Modelo:** `XGBoost` (Extreme Gradient Boosting).
-* **Por qué lo elegimos:** XGBoost es altamente eficiente para series temporales y datos tabulares complejos, manejando excelentemente la no linealidad entre variables meteorológicas (viento, temperatura, humedad) y la concentración de partículas.
-* **Datos:** Entrenado con un dataset histórico masivo (2021-Actualidad) proveniente de OpenWeather API.
-* **Pipeline MLOps:** El modelo cuenta con un pipeline de reentrenamiento automatizado mensual para adaptarse a los cambios estacionales e incorporar la data más reciente, evitando el *model drift*.
-
-### 2. El Agente de IA (Argus Assistant)
-Hemos integrado un asistente conversacional RAG/SQL que actúa como analista de datos:
-* **LLM Core:** Llama 3.1 (8B) optimizado mediante la API de Groq para inferencia ultrarrápida.
-* **Framework:** LangChain con herramientas personalizadas (`create_sql_agent`).
-* **Routing Dinámico:** El agente es capaz de discernir entre:
-  * **Charla natural:** Interacciones y saludos sin coste computacional.
-  * **Consultas de Base de Datos:** Generación de SQL seguro para extraer promedios y métricas de AWS RDS, con mecanismos de protección contra desbordamiento de tokens (`top_k` y agregaciones forzadas).
-  * **Búsqueda Web:** Integración con DuckDuckGo para consultar leyes ambientales externas (NOM-2023) en tiempo real.
-
-### 3. Frontend y UI/UX
-* **Tecnologías:** Vanilla HTML/JS, Tailwind CSS, Leaflet.js (Mapas espaciales) y Chart.js (Series de tiempo).
-* **Diseño Orientado a la Acción:** En lugar de solo mostrar concentración de microgramos por metro cúbico (lo cual confunde al usuario promedio), el dashboard traduce los datos de PM2.5 y PM10 a una escala de Riesgo del 1 al 5 (Buena a Extrema), inyectando dinámicamente tarjetas de recomendación sanitaria (ej. "Uso de N95 obligatorio").
+Nuestro objetivo es transicionar del monitoreo reactivo a la **prevención proactiva**. El sistema no solo informa el estado actual de la calidad del aire, sino que predice riesgos futuros y emite recomendaciones de salud accionables en tiempo real, operando bajo el marco de la normativa ambiental mexicana (**NOM-037-STPS-2023**).
 
 ---
 
-## 📊 ¿Qué datos mostramos y por qué?
-* **Temperatura y Viento:** Variables clave que influyen en la dispersión o estancamiento de los contaminantes.
-* **Riesgo NOM-2023 (1-5):** Unificación de múltiples métricas (PM2.5, PM10, O3, CO, NO2) en un índice único y comprensible para el ciudadano.
-* **Pronóstico a 3 Horas:** Permite a los usuarios planificar sus actividades al aire libre con anticipación.
-* **Geolocalización (Mapa):** Para confirmar visualmente el punto exacto de la toma de datos meteorológicos y analíticos.
+## ¿A quién va dirigido?
+
+*  **Ciudadanía en General:** Para la toma de decisiones diarias informadas (ej. la viabilidad de salir a correr, ventilar el hogar, o niveles de radiación para uso de protector solar).
+*  **Población Vulnerable:** Alertas tempranas para personas con afecciones respiratorias (asma, alergias), indicando ventanas de tiempo críticas donde el uso de mascarillas N95 es altamente recomendado.
+*  **Investigadores y Analistas:** Acceso rápido y democratizado a datos históricos mediante un agente conversacional inteligente, eliminando la barrera del lenguaje SQL.
 
 ---
 
-## 📂 Estructura del Proyecto
+##  Arquitectura del Sistema (Los 3 Pilares)
+
+### 1. El Motor de Datos (DataOps & ETL)
+Orquestado mediante **Apache Airflow** (Astronomer), garantiza que la base de datos (AWS RDS) se mantenga como la fuente de la verdad con datos siempre frescos. Consta de 3 DAGs principales:
+* **Backfill DAG:** Carga masiva de datos históricos desde 2021 hasta la fecha (vía OpenWeather API).
+* **Hourly Ingestion DAG:** Consulta e inserción de datos climatológicos cada hora.
+* **Retraining Trigger DAG:** Disparo automatizado mensual para iniciar el ciclo MLOps.
+
+### 2. El Motor Predictivo (MLOps Cycle)
+Basado en **XGBoost (Extreme Gradient Boosting)**, elegido por su alta eficiencia para modelar series temporales y capturar la no linealidad entre variables meteorológicas (viento, temperatura) y contaminantes.
+* **Pipeline Modular:** Compuesto por módulos aislados de Ingesta, Validación (detección de *Data Drift*), Transformación y Entrenamiento.
+* **Zero Model Decay:** El reentrenamiento autónomo mensual garantiza que el modelo se adapte a los cambios estacionales.
+* **Tracking & Deployment:** Monitoreo de hiperparámetros (Optuna/TPE) vía MLflow, y despliegue automático de artefactos a AWS S3.
+
+### 3. El Agente Inteligente (LLM & RAG/SQL)
+Un asistente conversacional que actúa como analista de datos ambientales 24/7.
+* **LLM Core:** Llama 3.1 (8B) optimizado mediante la API de **Groq** para latencia ultrabaja.
+* **Framework:** Agente SQL de **LangChain** capaz de traducir lenguaje natural a consultas seguras para AWS RDS, incorporando protecciones de tokens y agregaciones forzadas.
+* **Búsqueda Web (Tool):** Integración con DuckDuckGo para consultar leyes externas (NOM-2023) o contexto adicional en tiempo real.
+
+---
+
+## Tablero de Datos y Predicciones
+
+La plataforma expone los siguientes puntos críticos:
+* **Índice NOM-2023 (Riesgo 1-5):** Unificación algorítmica de múltiples contaminantes (PM2.5, PM10, O3, CO, NO2) en un índice ciudadano comprensible y accionable.
+* **Pronóstico a 3 Horas:** Predicción de severidad mediante XGBoost para planificación de actividades al aire libre.
+* **Variables Meteorológicas:** Temperatura, humedad y velocidad/dirección del viento (factores de dispersión).
+* **Geolocalización:** Mapeo exacto de la toma de datos.
+
+---
+
+##  Estructura del Proyecto
 
 ```text
-ArgusX_AirPollution/
-│
-├── api/                    # Backend FastAPI (Rutas, Endpoints)
-├── chat_agent/             # Lógica del Agente LLM (LangChain, Groq, DuckDuckGo)
-├── database/               # Conectores y gestores de AWS RDS
-├── ml_pipeline/            # Scripts de ingesta, limpieza y reentrenamiento XGBoost
-├── static/                 # Recursos estáticos (Imágenes, CSS custom)
-├── templates/              # Interfaz de usuario (index.html, dashboard)
-├── config.py               # Variables de entorno y configuración general
-├── app.py                  # Entry point del servidor ASGI
-└── requirements.txt        # Dependencias de Python
+Air_pollution/
+├── .github/workflows/          # CI/CD pipelines (GitHub Actions)
+├── air_quality/                # Módulo principal de MLOps
+│   ├── cloud/                  # Conexiones a AWS RDS
+│   ├── components/             # Componentes del pipeline (Ingestion, Transform, Trainer, etc.)
+│   ├── constant/               # Variables y rutas constantes
+│   ├── entity/                 # Entidades de configuración y artefactos
+│   ├── exception/              # Manejo de excepciones personalizadas
+│   ├── logging/                # Configuración de logs del sistema
+│   ├── pipeline/               # Orquestador del Training Pipeline
+│   └── utils/                  # Utilidades generales y métricas de ML
+├── chat_agent/                 # Módulo del Asistente LLM (LangChain + Groq)
+│   ├── chat_agent.py           # Lógica principal del agente SQL/RAG
+│   ├── config.py               # Configuración de LLM y Tools
+│   └── database_manager.py     # Gestor de consultas seguras a DB
+├── data_schema/                # Esquemas de validación (YAML)
+├── final_model/                # Artefactos listos para producción (model.pkl, preprocessor.pkl)
+├── templates/                  # Frontend básico / vistas web (index.html)
+├── tests/                      # Suite de tests unitarios (pytest)
+├── app.py                      # API y Web App (FastAPI / Flask)
+├── Dockerfile                  # Contenedorización del proyecto
+├── main.py                     # Script de ejecución manual del pipeline MLOps
+├── mlflow.db                   # Base de datos local para tracking de experimentos
+├── requirements.txt            # Dependencias del proyecto
+└── setup.py                    # Script de empaquetado del módulo
+```
+---
+
+## Despliegue Rápido (Local)
+
+1. **Clonar el repositorio:**
+   ```bash
+   git clone [https://github.com/ArgusX-dev/AirPollution_Prediction_AI.git](https://github.com/ArgusX-dev/AirPollution_Prediction_AI.git)
+   cd AirPollution_Prediction_AI
+
+

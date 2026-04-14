@@ -40,6 +40,6 @@ jobs:
         DB_USER: "dummy_user"
         DB_PASSWORD: "dummy_password"
         GROQ_API_KEY: "gsk_dummy_key_123456789",
-        PYTHONPATH: .
+        PYTHONPATH: ${{ github.workspace }}
       run: |
-        pytest tests/ --cov=air_quality --cov-report=xml -v
+        python -m pytest tests/ --cov=air_quality --cov-report=xml -v
