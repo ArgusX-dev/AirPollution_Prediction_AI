@@ -33,5 +33,6 @@ langchain-groq
 langchain-core
 psycopg2-binary
 duckduckgo-search>=5.0.0
+ddgs
 pytest
 #-e .
