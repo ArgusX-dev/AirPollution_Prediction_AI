@@ -1,3 +1,12 @@
+---
+title: Air Quality Predictor ArgusX
+emoji: 🌍
+colorFrom: green
+colorTo: blue
+sdk: docker
+pinned: false
+app_file: app.py
+---
 # 🌍 ArgusX Air Quality | Predictive MLOps & AI Platform
 
 ![Python 3.10](https://img.shields.io/badge/Python-3.10-blue.svg)
