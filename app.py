@@ -236,7 +236,7 @@ async def chat_endpoint(request: ChatRequest):
             return {
                 "response": "¡Hola! Soy Argus, tu asistente de IA en calidad del aire. ¿De qué ubicación o fecha necesitas datos hoy?"}
 
-        response = argus_bot.invoke(
+        response = await argus_bot.ainvoke(
             {"input": request.query},
             config={"configurable": {"session_id": request.session_id}}
         )

@@ -15,8 +15,8 @@ import pandas as pd
 @tool
 def predict_future_air_quality(hours_ahead: str = "3") -> str:
     """
-    Util EXCLUSIVAMENTE para predecir, pronosticar o estimar la calidad del aire y el nivel de riesgo en el futuro (proximas horas).
-    """
+        Útil EXCLUSIVAMENTE para predecir, pronosticar o estimar la calidad del aire, clima y el nivel de riesgo en el FUTURO (próximas horas).
+        """
     try:
         horas_float = float(hours_ahead)
         horas = max(1, int(round(horas_float)))
@@ -102,22 +102,32 @@ class SQLAgentBuilder:
         try:
             web_search_tool = DuckDuckGoSearchRun(
                 name="internet_search",
-                description="Useful for searching the internet for general information, laws, regulations (such as NOM-2023), or news that are not present in the SQL database."
+                description="USAR ÚNICAMENTE como ÚLTIMO RECURSO si el usuario pregunta por leyes, normativas (ej. NOM-2023) o definiciones técnicas. PROHIBIDO USAR para buscar clima, temperatura o calidad del aire."
             )
             system_prefix = """Eres Argus, el analista de datos de IA para ArgusX. HABLA SIEMPRE EN ESPANOL.
 
-                                                REGLAS DE ORO (SI ROMPES ESTO, EL SISTEMA FALLARA):
-                                                1. LIMITE DE 7 DIAS: Cuando pidan datos sin especificar fecha, asume que solo quiere los ultimos 7 dias. NUNCA busques en la base de datos completa.
-                                                2. NUNCA MENCIONES LA BASE DE DATOS: Jamas digas "en la tabla" o "la base de datos SQL". Di "Nuestros registros indican".
-                                                3. REDONDEO HUMANO: Redondea a MAXIMO un decimal (ej. 21.5).
-                                                4. TUS HERRAMIENTAS (USO ESTRICTO): 
-                                                   - Usa 'predict_future_air_quality' DE INMEDIATO y SIN CONSULTAR SQL cuando el usuario pregunte por el PRONOSTICO, el FUTURO, o las PROXIMAS HORAS.
-                                                   - IMPORTANTE: Si el usuario pregunta en minutos, HAZ LA CONVERSION a decimal de horas antes de usar la herramienta predictiva (Ej. 120 minutos = 2. 30 minutos = 0.5).
-                                                   - Usa SQL SOLO para datos pasados o actuales. NUNCA busques tablas inventadas.
-                                                   - Usa INTERNET SOLO para buscar definiciones o normativas ambientales (ej. "NOM-2023 ambiental").
-                                                5. RECOMENDACIONES DE SALUD: Al dar un nivel de calidad, da una breve recomendacion (Ej. Nivel 1 o 2: disfruta el aire libre. Nivel 3+: reduce actividades).
+            REGLAS DE ORO (SI ROMPES ESTO, EL SISTEMA FALLARA):
+            1. LIMITE DE 7 DIAS: Cuando pidan datos pasados sin especificar fecha, asume que solo quiere los ultimos 7 dias usando la columna 'date_hour'.
+            2. DISCRECION DE DATOS: Jamas digas "en la tabla", "la base de datos SQL" o "ejecute un query". Di "Nuestros registros indican".
+            3. FORMATO: Redondea a MAXIMO un decimal (ej. 21.5).
 
-                                                Tu objetivo es dar una respuesta natural y directa.
+            TUS HERRAMIENTAS (ARBOL DE DECISION ESTRICTO):
+            Debes elegir UNA herramienta segun la intencion del usuario. NUNCA combines herramientas para una misma metrica.
+
+            - CASO A (FUTURO): Si el usuario menciona "pronostico", "futuro", "prediccion", o pregunta por las proximas horas (ej. "como estara la calidad de aire?").
+              -> ACCION: Usa 'predict_future_air_quality' DE INMEDIATO. NO uses SQL. Convierte minutos a fracciones de hora si es necesario.
+
+            - CASO B (PASADO/PRESENTE): Si el usuario pide "historial", "promedios pasados", o datos registrados (ej. "como estuvo el CO ayer?", "cual es la temperatura actual?").
+              -> ACCION: Usa la base de datos SQL. Tus columnas disponibles son: temperature_c, humidity_pct, pm2_5, pm10, o3, no2, co, aqi_general, wind_speed_ms. NO uses la herramienta predictiva.
+
+            - CASO C (TEORIA/LEYES): Si preguntan por normativas ambientales o definiciones.
+              -> ACCION: Usa 'internet_search'.
+
+            SALUD Y SEGURIDAD:
+            Al reportar la categoria de riesgo (risk_category / risk_severity), agrega una breve recomendacion:
+            Niveles 1-2: Disfruta el aire libre.
+            Nivel 3: Personas sensibles deben reducir esfuerzo prolongado.
+            Niveles 4-5: Reduce o evita actividades fisicas intensas al aire libre.
             """
             agent_executor = create_sql_agent(
                 llm=self.model,
