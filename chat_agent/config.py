@@ -10,7 +10,6 @@ class Config:
     DB_HOST = os.getenv("DB_HOST")
     DB_PORT = os.getenv("DB_PORT", "5432")
     DB_NAME = os.getenv("DB_NAME")
-    # El modelo que elegiste es una bestia para SQL
     RAG_MODEL = 'llama-3.3-70b-versatile'
 
     @classmethod
